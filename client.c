@@ -13,8 +13,12 @@
  * limitations under the License.
  */
 
+// For access to sync() (see man(2) sync)
+#define _XOPEN_SOURCE 500
+
 #include <errno.h>
-#include <fcntl.h>jjjjj
+#include <fcntl.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -135,7 +139,26 @@ char *print_flags(char *output, char *output_end, struct flag const *flags,
   return output;
 }
 
+void flush_caches() {
+  int fd;
+  char *data = "3";
+  sync();
+  fd = open("/proc/sys/vm/drop_caches", O_WRONLY);
+  write(fd, data, sizeof(char));
+  close(fd);
+}
+
+void intHandler(int dummy) {
+  fprintf(stderr, "exiting, caught ctrl+c\n");
+  exit(0);
+}
+
 int main(int argc, char const *argv[]) {
+
+  signal(SIGINT, intHandler);
+
+  flush_caches();
+
   int fanfd, i, result, cwdfd;
   if (argc == 1) {
     write(2, USAGE, sizeof(USAGE) - 1);

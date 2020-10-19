@@ -18,8 +18,8 @@ and an exposed port.
 
 There are two suites of benchmarks:
 
-  - Raw filesystem performance (open, read, write, stat, lstat and friends).
-  - Latency (host changes reflected on the container, if at all)
+- Raw filesystem performance (open, read, write, stat, lstat and friends).
+- Latency (host changes reflected on the container, if at all)
 
 ## Performance Test
 
@@ -32,23 +32,22 @@ in a software project.
 
 Server to Client:
 
-  - "ready\0" - indicates that filesystem set-up is done, and client should
-    begin to report events over the socket
+- "ready\0" - indicates that filesystem set-up is done, and client should
+  begin to report events over the socket
 
 Client to Server:
 
-  - "_____?" - TBD, client should "forward" fanotify events to server
+- "**\_**?" - TBD, client should "forward" fanotify events to server
 
 ## Filesystem events on the host
 
 To be fair, the "server" (running on the host machine) also uses FS events,
 that gives us three moving pieces:
 
- - fanotify (or similar) on the host
- - fanotify on the container (always Linux)
- - a loop modifying the filesytem on the host
+- fanotify (or similar) on the host
+- fanotify on the container (always Linux)
+- a loop modifying the filesytem on the host
 
 fanotify on the host then records the event timestamp once an event is
 observed, and waits for the same from the container. This helps give an
 impression of the latency.
-
