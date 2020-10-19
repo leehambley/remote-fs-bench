@@ -6,8 +6,9 @@ client-container:
 
 server: server.c
 	gcc -Wall -std=c99 server.c -o server
+	./server
 
 fmt: *.c
 	clang-format --verbose -i *.c
 
-.PHONY: client-container
+.PHONY: client-container server

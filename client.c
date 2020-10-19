@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-// For access to sync() (see man(2) sync)
+// For access to sync() (see man (3) sync)
 #define _XOPEN_SOURCE 500
 
 #include <errno.h>
