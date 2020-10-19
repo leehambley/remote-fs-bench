@@ -8,7 +8,10 @@ server: server.c
 	gcc -Wall -std=c99 server.c -o server
 	./server
 
+clean:
+	git clean -fX shared-directory
+
 fmt: *.c
 	clang-format --verbose -i *.c
 
-.PHONY: client-container server
+.PHONY: client-container server clean

@@ -2,6 +2,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <linux/limits.h> /* PATH_MAX */
 #include <stdio.h>
@@ -84,9 +85,9 @@ int main(int argc, char const *argv[]) {
   // outer loop generates our thousands of files.
   for (unsigned int i = 0; i <= FILES_TO_CREATE; i++) {
     // at random directory depth between
-    // three and fifteen
-    unsigned int lower = 3;
-    unsigned int upper = 15;
+    // three and five (this _feels_ reasonable)
+    unsigned int lower = 1;
+    unsigned int upper = 5;
     unsigned int depth = (rand() % (upper - lower + 1)) + lower;
 
     // generate a random file-name, we'll inject (overwire)
@@ -122,33 +123,40 @@ int main(int argc, char const *argv[]) {
     // dirname, we'll then open and create the file and
     // write FILE_BYTE_SIZE bytes from /dev/zero into
     // our file.
-    // TODO: string manipulation ftw? Yikes this is ugly.
-    char *str_basename = malloc(
+    char *str_filename = malloc(
         sizeof(char) * (strlen(SHARED_DIR_PATH_PREFIX) + FILENAME_LEN + 1));
-    strcat(str_basename, SHARED_DIR_PATH_PREFIX);
-    strcat(str_basename, basename(str));
-    if (str_basename == NULL) {
-      fprintf(stderr, "getting basename from %s\n", str);
-      exit(1);
-    }
-    // TODO: string manipulation ftw? Yikes this is ugly.
+    strcat(str_filename, SHARED_DIR_PATH_PREFIX);
+    strcat(str_filename, str);
+
+    // NOTE: dirname modifies its argument
+    char *dirnamestr = strdup(str);
     char *str_dirname = malloc(
         sizeof(char) * (strlen(SHARED_DIR_PATH_PREFIX) + FILENAME_LEN + 1));
     strcat(str_dirname, SHARED_DIR_PATH_PREFIX);
-    strcat(str_dirname, dirname(str));
+    strcat(str_dirname, dirname(dirnamestr));
+    free(dirnamestr);
+
     if (str_dirname == NULL) {
       fprintf(stderr, "error getting dirname for %s\n", str);
       exit(1);
     }
 
-    printf("%05d - %04d - %s - %s- %s\n", i, depth, str_basename, str_dirname,
-           str);
+    printf("%05d - %04d - %s\n", i, depth, str);
+
     if (mkdir_p(str_dirname) != 1) {
-      fprintf(stderr, "error creating directory %s\n", str_dirname);
       if (errno != EEXIST) {
+        fprintf(stderr, "error creating directory %s\n", str_dirname);
         exit(2);
       }
     }
+
+    int output_fd = open(str_filename, O_WRONLY | O_CREAT, 0644);
+    if (output_fd == -1) {
+      perror("open");
+      return 3;
+    }
+
+    close(output_fd);
   }
 
   // print all the filenames we know about
