@@ -7,3 +7,5 @@ RUN apk add gcc make cmake musl-dev
 ADD client.c client.c
 
 RUN gcc -Wall -std=c99 -c client.c -o client
+
+CMD ./client OPEN,ACCESS,MODIFY,CLOSE,CLOSE_WRITE,CLOSE_NOWRITE,ONDIR,EVENT_ON_CHILD
